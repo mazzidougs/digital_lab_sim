@@ -1,0 +1,157 @@
+
+.data
+	array_keyboard: .word 0x11, 0x21, 0x41, 0x81, 0x12, 0x22, 0x42, 0x82, 0x14, 0x24, 0x44, 0x84, 0x18, 0x28, 0x48, 0x88 
+	array_display: .word 0x3f, 0x6, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x7, 0x7f, 0x6f, 0x5f, 0x7c, 0x39, 0x5e, 0x79, 0x71
+	
+.text
+	
+	li $s0, 0xffff0010 
+	li $s1, 0xffff0011
+	li $s2, 0xffff0012
+	li $s3, 0xffff0014
+
+	b PROC_main
+	
+	count:
+	
+		addi $sp, $sp, -4
+		sw $s4, 0($sp)
+		lw $t2, 0($s4)
+		addi $s4, $s4, 4
+		beq $t7, $t2, end_count
+		
+		addi $t3, $t3, 1
+		b count
+		
+		end_count:
+			lw $s4, 0($sp)
+			addi $sp, $sp, 4
+			jr $ra
+				
+	count_2:
+	
+		addi $sp, $sp, -4
+		sw $s5, 0($sp)
+		lw $t2, 0($s5)
+		addi $s5, $s5, 4
+		beq $t4, $t3, end_count_2
+
+		addi $t4, $t4, 1
+		b count_2
+		
+		end_count_2:
+			lw $s5, 0($sp)
+			addi $sp, $sp, 4
+			jr $ra
+			
+	PROC_keyboard:
+	
+		li $t3, 1 
+		
+			loop_line:
+			addi $sp, $sp, -4
+			sw $s2, 0($sp)
+			
+			sb $t3, 0($s2) 
+			lw $v0, 0($s3) 
+			bgt $v0, 0, end 
+			beq $t3, 8, PROC_keyboard
+			mul $t3, $t3, 2 
+			b loop_line
+			end: 
+			lw $s2, 0($sp)
+			addi $sp, $sp, 4
+			
+				jr $ra
+			
+				
+	regressive_count:
+		
+		regressive_count_right:
+			
+			lw $t0, 0($t6)
+			sb $t0, 0($s0)
+			subi $t6, $t6, 4
+			lw $t1, 0($t5)
+			beq $t0, 0x3f, end_count_reg
+			
+			li $v0, 32
+			li $a0, 500
+			syscall
+			
+			b regressive_count_right
+						
+		regressive_count_left:
+			
+			addi $t5, $t5, -4
+			lw $t1, 0($t5)
+			sb $t1, 0($s1)
+			
+			li $t6, 0x1001007c
+			b regressive_count_right
+			
+		
+		end_count_reg:
+			
+			bne $t1, 0x3f, regressive_count_left
+			jr $ra
+				
+	PROC_beep:
+		li $v0, 31
+		li $a0, 50
+		li $a1, 1000
+		li $a2, 100
+		li $a3, 100
+		syscall
+		
+		li $v0, 32
+		li $a0, 1000
+		syscall
+		
+		jr $ra
+		
+	PROC_main:
+	 
+		la $s4, array_keyboard
+		la $s5, array_display
+		jal PROC_keyboard
+		move $t7, $v0
+		
+		li $t3, 0
+		jal count
+		
+		li $t2, 0
+		jal count_2
+		sb $t2, 0($s1)
+		
+		addi $t5, $s5, 0
+		
+		PROC_step_1:
+			lb $t7, 0($s3)
+			bne $t7, 0, PROC_step_1
+			
+		jal PROC_keyboard
+		move $t7, $v0
+		
+		li $s4, 0x10010000
+		li $s5, 0x10010040
+		
+		li $t3, -1
+		jal count
+		
+		li $t4, -1
+		li $t2, 0
+		jal count_2
+		sb $t2, 0($s0)
+		
+		move $t6, $s5
+		
+		PROC_step_2:
+			lb $t7, 0($s3)
+			bne $t7, 0, PROC_step_2
+		
+		jal regressive_count
+					
+		jal PROC_beep
+		
+		j PROC_main
