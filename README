@@ -1,5 +1,5 @@
 This project was carried out for a microprocessor class, I didn't find any code on the internet that helped me how to do this type of implementation, so I'm sharing it.
 
- Digital Lab Sim is a Mars Mips tool, it has a screen with a keyboard and two 7-segment displays (to find the documentation about it, we can click on the help option).
+Digital Lab Sim is a Mars Mips tool, it has a screen with a keyboard and two 7-segment displays (to find the documentation about it, we can click on the help option).
 
- The problem: get the key pressed by the user on the keyboard, show these numbers on the display, make a countdown and when it reaches “00” a beep is triggered.
+The problem: get the key pressed by the user on the keyboard, show these numbers on the display, make a countdown and when it reaches “00” a beep is triggered.
